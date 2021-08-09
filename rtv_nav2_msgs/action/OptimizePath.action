@@ -1,0 +1,11 @@
+#goal definition
+nav_msgs/Path path
+geometry_msgs/PoseStamped start
+string optimizer_id
+bool use_start # If true, use current robot pose as path start, if false, use start above instead
+---
+#result definition
+nav_msgs/Path path
+builtin_interfaces/Duration optimization_time
+---
+#feedback

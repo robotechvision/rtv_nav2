@@ -1,0 +1,7 @@
+<class_libraries>
+  <library path="ceres_costaware_smoother">
+    <class name="rtv_nav2_plan_optimizer/CeresCostawareSmoother" type="rtv_nav2_plan_optimizer::CeresCostawareSmoother" base_class_type="rtv_nav2_plan_optimizer::PlanOptimizer">
+      <description>Increases smoothness and distance from obstacles of a path using Ceres solver optimization (for now auto-diff cost function)</description>
+    </class>
+  </library>
+</class_libraries>
