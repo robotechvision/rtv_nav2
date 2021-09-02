@@ -131,10 +131,10 @@ controller_server:
       blind_start: false
       max_no_data_time: 25.0
       should_control: true
-      max_velocity_linear: 0.3
+      max_velocity_linear: 0.25
       max_velocity_linear_decrease_per_rotational_velocity: 0.0
       max_velocity_rotational_decrease_per_radius_decrease: 0.0
-      max_velocity_rotational: 0.75
+      max_velocity_rotational: 0.25
       min_movement_duration: 0.4
       rrads_per_rrad_change_penalty: 1.0
       control_traj_error_positional_penalty: 1.0
