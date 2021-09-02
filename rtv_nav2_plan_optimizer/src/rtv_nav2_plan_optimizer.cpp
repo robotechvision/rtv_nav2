@@ -253,8 +253,6 @@ void PlanOptimizerServer::optimizePlan()
 {
   RCLCPP_INFO(get_logger(), "Received a goal, begin computing control effort.");
 
-  auto start_time = steady_clock_.now();
-
   auto result = std::make_shared<Action::Result>();
   try {
     std::string c_name = action_server_->get_current_goal()->optimizer_id;
@@ -271,6 +269,7 @@ void PlanOptimizerServer::optimizePlan()
     setPlannerPath(action_server_->get_current_goal()->path);
 
     // updateGlobalPath();
+    auto start_time = steady_clock_.now();
 
     result->path = whole_path_;
     result->path.poses.erase(result->path.poses.begin() + current_path_begin_, result->path.poses.begin() + current_path_end_);
@@ -347,6 +346,19 @@ void PlanOptimizerServer::setPlannerPath(const nav_msgs::msg::Path & path)
                              path.poses[current_path_begin_+1].pose.position.y - path.poses[current_path_begin_].pose.position.y);
         current_path_begin_--;
       }
+
+      ////TODO: delete////////////
+      length = 0;
+      int i = current_path_begin_;
+      while (i < current_path_end_-1) {
+        length += std::hypot(path.poses[i+1].pose.position.x - path.poses[i].pose.position.x,
+                             path.poses[i+1].pose.position.y - path.poses[i].pose.position.y);
+        i++;
+      }
+      RCLCPP_INFO(
+        get_logger(),
+        "Path length %lf", length);
+      ////////////////////////////
 
       current_path_.header = path.header;
       current_path_.poses = std::vector<geometry_msgs::msg::PoseStamped>(path.poses.begin() + current_path_begin_, path.poses.begin() + current_path_end_);

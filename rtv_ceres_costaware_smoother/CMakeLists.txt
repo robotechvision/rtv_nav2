@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
-project(rtv_nav2_behavior_tree)
+project(rtv_ceres_costaware_smoother)
+
+set(CMAKE_BUILD_TYPE Release) # significant Ceres optimization speedup
 
 find_package(ament_cmake REQUIRED)
 find_package(nav2_core REQUIRED)
@@ -10,19 +12,21 @@ find_package(rclcpp_action REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(nav2_msgs REQUIRED)
-find_package(rtv_nav2_msgs REQUIRED)
 find_package(nav_2d_utils REQUIRED)
 find_package(nav_2d_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
-find_package(nav2_behavior_tree REQUIRED)
+find_package(Ceres REQUIRED COMPONENTS SuiteSparse)
 
-# nav2_package()
+set(CMAKE_CXX_STANDARD 17)
+
+nav2_package()
+
+set(library_name rtv_ceres_costaware_smoother)
 
 include_directories(
   include
+  ${CERES_INCLUDES}
 )
-
-set(executable_name optimizer_server)
 
 set(dependencies
   angles
@@ -30,34 +34,18 @@ set(dependencies
   rclcpp_action
   std_msgs
   nav2_msgs
-  rtv_nav2_msgs
   nav_2d_utils
   nav_2d_msgs
   nav2_util
   nav2_core
   pluginlib
-  nav2_behavior_tree
 )
 
-add_library(rtv_nav2_optimize_path_action_bt_node SHARED plugins/optimize_path_action.cpp)
-list(APPEND plugin_libs rtv_nav2_optimize_path_action_bt_node)
-
-add_library(rtv_nav2_resetter_node_bt_node SHARED plugins/resetter_node.cpp)
-list(APPEND plugin_libs rtv_nav2_resetter_node_bt_node)
-
-add_library(rtv_nav2_fallback_pipeline_bt_node SHARED plugins/fallback_pipeline.cpp)
-list(APPEND plugin_libs rtv_nav2_fallback_pipeline_bt_node)
-
-add_library(rtv_nav2_progress_checker_pipeline_bt_node SHARED plugins/progress_checker_pipeline.cpp)
-list(APPEND plugin_libs rtv_nav2_progress_checker_pipeline_bt_node)
-
-add_library(rtv_nav2_had_feedback_condition_bt_node SHARED plugins/had_feedback_condition.cpp)
-list(APPEND plugin_libs rtv_nav2_had_feedback_condition_bt_node)
-
-foreach(bt_plugin ${plugin_libs})
-  ament_target_dependencies(${bt_plugin} ${dependencies})
-  target_compile_definitions(${bt_plugin} PRIVATE BT_PLUGIN_EXPORT)
-endforeach()
+add_library(${library_name} SHARED plugins/ceres_costaware_smoother.cpp)
+target_link_libraries(${library_name} ${CERES_LIBRARIES})
+# prevent pluginlib from using boost
+target_compile_definitions(${library_name} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+ament_target_dependencies(${library_name} ${dependencies})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -70,7 +58,8 @@ if(BUILD_TESTING)
 endif()
 
 install(
-  TARGETS ${plugin_libs}
+  TARGETS
+    ${library_name}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -86,8 +75,9 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_include_directories(include)
-ament_export_libraries(
-  ${plugin_libs}
-)
+ament_export_libraries(${library_name})
+ament_export_dependencies(${dependencies})
+
+pluginlib_export_plugin_description_file(nav2_core rtv_ceres_costaware_smoother.xml)
 
 ament_package()

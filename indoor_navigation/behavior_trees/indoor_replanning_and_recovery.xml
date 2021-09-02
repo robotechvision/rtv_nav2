@@ -4,10 +4,10 @@
     <RecoveryNode number_of_retries="6" name="NavigateRecovery">
       <ResetterNode>
         <GoalUpdated/>
-        <FallbackPipeline name="NavigateWithReplanning">
+        <ProgressCheckerPipeline name="NavigateWithReplanning">
           <RateController hz="0.02">
             <RecoveryNode number_of_retries="1" name="ComputePathToPose">
-              <ComputePathToPose goal="{goal}" path="{path_coarse}" planner_id="GridBased"/>
+              <ComputePathToPose goal="{goal}" path="{path_coarse}" planner_id="GridBased" server_timeout="60.0"/>
               <ReactiveFallback name="ComputePathToPoseRecoveryFallback">
                 <GoalUpdated/>
                 <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
@@ -15,13 +15,13 @@
             </RecoveryNode>
           </RateController>
           <DistanceController distance="2.0">
-            <RecoveryNode number_of_retries="1" name="OptimizePath">
-              <OptimizePath path_in="{path_coarse}" path_out="{path}" optimizer_id="OptimizePath"/>
-              <ReactiveFallback name="OptimizePathRecoveryFallback">
+            <RecoveryNode number_of_retries="1" name="SmoothPath">
+              <SmoothPath path_in="{path_coarse}" path_out="{path}" smoother_id="SmoothPath"/>
+              <ReactiveFallback name="SmoothPathRecoveryFallback">
                 <GoalUpdated/>
                 <Sequence>
-                  <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
-                  <ComputePathToPose goal="{goal}" path="{path_coarse}" planner_id="GridBased"/>
+                  <ClearEntireCostmap name="ClearGlobalCostmapSmoother-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
+                  <ComputePathToPose goal="{goal}" path="{path_coarse}" planner_id="GridBased" server_timeout="60.0"/>
                 </Sequence>
               </ReactiveFallback>
             </RecoveryNode>
@@ -33,7 +33,8 @@
               <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
             </ReactiveFallback>
           </RecoveryNode>
-        </FallbackPipeline>
+          <HadFeedback name="HadFeedback_FollowPath"/>
+        </ProgressCheckerPipeline>
       </ResetterNode>
       <ReactiveFallback name="RecoveryFallback">
         <GoalUpdated/>

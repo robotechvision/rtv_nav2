@@ -85,7 +85,7 @@ def generate_launch_description():
 
         DeclareLaunchArgument(
             'params_file',
-            default_value=os.path.join(bringup_dir, 'params', 'nav2_params.yaml'),
+            default_value=os.path.join(bringup_dir, 'params', 'nav2_params2.yaml'),
             description='Full path to the ROS2 parameters file to use'),
 
         DeclareLaunchArgument(
@@ -120,7 +120,7 @@ def generate_launch_description():
             output='screen',
             arguments=['--ros-args', '--log-level', logger],
             parameters=[configured_params],
-            remappings=remappings),
+            remappings=remappings + [('/astar_map_pcl', '/astar_map_pcl2'), ('/astar_node_pcl', '/astar_node_pcl2'), ('/unsmoothed_plan', '/unsmoothed_plan2')]),
 
         Node(
             package='nav2_smoother',

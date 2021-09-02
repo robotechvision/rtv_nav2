@@ -1,8 +1,11 @@
-# Nav2 Controller
+# rtv_nav2_behavior_tree
 
-The Nav2 Controller is an [Execution Module](../doc/requirements/requirements.md) that implements the `nav2_msgs::action::FollowPath` action server.
+The rtv_nav2_behavior_tree module provides additional useful plugins for nav2_bt_navigator:
 
-An execution module implementing the `nav2_msgs::action::FollowPath` action server is responsible for generating command velocities for the robot, given the computed path from the planner module in `nav2_planner`. The nav2_controller package is designed to be loaded with plugins for path execution. The plugins need to implement functions in the virtual base class defined in the `controller` header file in `nav2_core` package.
-
-
-Currently available controller plugins are: DWB, and [TEB (dashing release)](https://github.com/rst-tu-dortmund/teb_local_planner/tree/dashing-devel).
+| BT Node   |      Type      |  Description |
+|----------|:-------------|------|
+| FallbackPipeline | Control | Type of sequence node that re-ticks previous children when a child returns RUNNING. If a ticked node returns failure, all nodes since the previous node are halted and the execution is restarted from the previous node. WARNING: loops can occur with this pipeline. It is usually more appropriate to use ProgressCheckerPipeline which uses an anti-loop progress check condition |
+| HadFeedbackCondition | Condition | A BT::ConditionNode that listens to a feedback of a FollowPath action and returns SUCCESS when the feedback has been received since last halt() and FAILURE otherwise |
+| OptimizePathAction | Action | A nav2_behavior_tree::BtActionNode class that wraps rtv_nav2_msgs::action::OptimizePath |
+| ProgressCheckerPipeline | Control | Type of sequence node that re-ticks previous children when a child returns RUNNING. If a ticked node returns failure, all nodes since the previous node are halted and the execution is restarted from the previous node. The last node is a progress condition which in the case of a failure of a node checks whether progress has been made since last failure. If no progress has been detected, the execution is restarted from the last node that hasn't been halted since the no-progress situation began. If this restart fails without progress too, next restart starts from the previous node and so on, until the first node is reached. If the restart from the first node fails without progress, ProgressCheckerPipeline returns FAILURE. |
+| ResetterNode | Control | The ResetterNode returns result of its last child. If any of the other children returns SUCCESS, all children are halted, however, unlike in ReactiveFallback, the node does not return SUCCESS but keeps ticking the nodes until the last node returns SUCCESS or FAILURE |
